@@ -14,7 +14,7 @@ Use the ISO standard for week numbering, where the first week of the year is the
 The PDF should also include a title at the top that says "Life Calendar" and a subtitle that reads "Each square represents one week.  Each line represents one year.  Each block represents a decade."
 The PDF should be a standard letter size (8.5 x 11 inches) in portrait orientation.  The entire calendar should fit on one page, within the page margins, with appropriate spacing between squares and rows for clarity.
 Add age markers/decade labels on the left side of the calendar (10, 20, 30, etc.) to help users quickly identify the decades.
-Add an optional footer line: name + birthdate + generation mode (START_AT_BIRTH / START_IN_JAN) + file creation date.
+Add an optional footer line: name + birthdate + file creation date.
 
 At the bottom of the calendar, include the following information:
 Weeks lived: <number_of_weeks_lived>
@@ -46,10 +46,6 @@ When the script(s) are run, it should
     You can assume that the user is less than 90 years old.
 3. Ask the user if they're male or female.
     Verify the input begins with either "M" or "F".
-4. Ask the user if they want to start the calendar from their birth week (START_AT_BIRTH) or from the beginning of the year they were born (START_IN_JAN).
-5. If START_AT_BIRTH is selected, the calendar should start from the week of the user's birth date.  The first square should correspond to the week they were born.
-    For the Birth Week Calculation: Find which week of the year they were born in (using ISO week date system).  The first square in the calendar should correspond to that week in that year.
-6. If START_IN_JAN is selected, the calendar should start from January of the year the user was born.  The first square should correspond to the first week of that year.  HOWEVER, the weeks prior to the user's birth week should be left blank - white squares with white borders, making them invisible on the PDF.
-7. If there are problems with the validation, exit the program with an appropriate error message.
-8. Generate the life calendar PDF accordingly, filling in the weeks already lived based on the current date.  Name the file "life_calendar_<FIRSTNAME>.pdf", where <FIRSTNAME> is the user's first name in lowercase.
+4. If there are problems with the validation, exit the program with an appropriate error message.
+5. Generate the life calendar PDF accordingly, filling in the weeks already lived based on the current date.  Name the file "number_our_days_<FIRSTNAME>.pdf", where <FIRSTNAME> is the user's first name in lowercase.
 --------------------------------------------------------------------------------------------------------------------------------------

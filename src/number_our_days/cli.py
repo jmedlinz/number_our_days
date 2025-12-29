@@ -12,7 +12,6 @@ from reportlab.pdfgen import canvas
 # Constants derived from recent CDC life expectancy summaries (circa 2023)
 MALE_LIFE_EXPECTANCY_YEARS = 75.8
 FEMALE_LIFE_EXPECTANCY_YEARS = 81.1
-AVERAGE_WEEKS_PER_YEAR = 52.1775  # Based on 365.2425 / 7
 WEEKS_PER_DISPLAY_YEAR = 52
 DISPLAY_YEARS = 90
 TOTAL_WEEKS = DISPLAY_YEARS * WEEKS_PER_DISPLAY_YEAR
@@ -23,16 +22,11 @@ class UserInput:
     first_name: str
     birth_date: date
     gender: str  # "M" or "F"
-    start_mode: str  # "START_AT_JAN" or "START_AT_BIRTH"
 
 
 @dataclass
 class CalendarStats:
-    anchor_week_start: date
     birth_week_start: date
-    current_week_start: date
-    pre_birth_weeks: int
-    weeks_lived: int
     expectancy_weeks: int
     expectancy_week_index_m: int | None
     expectancy_week_index_f: int | None
@@ -40,15 +34,6 @@ class CalendarStats:
 
 def iso_week_start(value: date) -> date:
     return value - timedelta(days=value.isoweekday() - 1)
-
-
-def iso_week1_start(year: int) -> date:
-    jan4 = date(year, 1, 4)
-    return iso_week_start(jan4)
-
-
-def weeks_between(start: date, end: date) -> int:
-    return (end - start).days // 7
 
 
 def add_years_safe(d: date, years: int) -> date:
@@ -74,18 +59,14 @@ def collect_user_input(debug: bool = False) -> UserInput:
         first = "debug"
         birth_dt = date(2000, 1, 1)
         gender = "M"
-        mode = "START_AT_BIRTH"
-        print(f"DEBUG MODE: Using first_name={first}, birth_date={birth_dt}, gender={gender}, start_mode={mode}")
+        print(f"DEBUG MODE: Using first_name={first}, birth_date={birth_dt}, gender={gender}")
         print(f"Today: {date.today()}")
         print(f"Birth week start: {iso_week_start(birth_dt)}")
         print(f"Current week start: {iso_week_start(date.today())}")
         days_lived = (date.today() - birth_dt).days
         weeks_lived = days_lived // 7
         print(f"Days lived: {days_lived}, Weeks lived: {weeks_lived}")
-        print(
-            f"Weeks lived / 52 = {weeks_lived / 52:.2f} (should show row {int(weeks_lived // 52)} col {int(weeks_lived % 52)})"
-        )
-        return UserInput(first_name=first, birth_date=birth_dt, gender=gender, start_mode=mode)
+        return UserInput(first_name=first, birth_date=birth_dt, gender=gender)
 
     first = input("Enter your first name: ").strip()
     if not first.isalpha() or len(first) < 2:
@@ -109,56 +90,25 @@ def collect_user_input(debug: bool = False) -> UserInput:
         sys.exit(1)
     gender = gender_raw[0]
 
-    mode_raw = input("Start at birth week or start in January of birth year? (Birth/Jan): ").strip().upper()
-    if mode_raw in {"BIRTH", "START_AT_BIRTH"}:
-        mode = "START_AT_BIRTH"
-    elif mode_raw in {"JAN", "START_AT_JAN"}:
-        mode = "START_AT_JAN"
-    else:
-        sys.stderr.write("Error: Mode must be BIRTH or JAN.\n")
-        sys.exit(1)
-
-    return UserInput(first_name=first, birth_date=birth_dt, gender=gender, start_mode=mode)
+    return UserInput(first_name=first, birth_date=birth_dt, gender=gender)
 
 
 def compute_stats(user: UserInput) -> CalendarStats:
-    today = date.today()
     birth_week_start = iso_week_start(user.birth_date)
-    anchor_week_start = (
-        iso_week1_start(user.birth_date.year) if user.start_mode == "START_AT_JAN" else birth_week_start
-    )
-    pre_birth_weeks = (
-        weeks_between(anchor_week_start, birth_week_start) if user.start_mode == "START_AT_JAN" else 0
-    )
-
-    current_week_start = iso_week_start(today)
-
-    # Calculate weeks lived from actual birth DATE, not birth week start
-    days_lived = (today - user.birth_date).days
-    weeks_lived = days_lived // 7
 
     expectancy_years = MALE_LIFE_EXPECTANCY_YEARS if user.gender == "M" else FEMALE_LIFE_EXPECTANCY_YEARS
 
-    # For START_AT_BIRTH, align expectancy to grid (52 weeks/year)
-    # For START_AT_JAN, use accurate average weeks
-    if user.start_mode == "START_AT_BIRTH":
-        expectancy_row = int(expectancy_years)
-        expectancy_col = int((expectancy_years - expectancy_row) * WEEKS_PER_DISPLAY_YEAR)
-        base_expectancy_index = expectancy_row * WEEKS_PER_DISPLAY_YEAR + expectancy_col
-        expectancy_weeks = base_expectancy_index
-    else:
-        expectancy_weeks = int(round(expectancy_years * AVERAGE_WEEKS_PER_YEAR))
-        base_expectancy_index = expectancy_weeks
+    # Align expectancy to grid (52 weeks/year)
+    expectancy_row = int(expectancy_years)
+    expectancy_col = int((expectancy_years - expectancy_row) * WEEKS_PER_DISPLAY_YEAR)
+    base_expectancy_index = expectancy_row * WEEKS_PER_DISPLAY_YEAR + expectancy_col
+    expectancy_weeks = base_expectancy_index
 
-    expectancy_week_index_m = pre_birth_weeks + base_expectancy_index if user.gender == "M" else None
-    expectancy_week_index_f = pre_birth_weeks + base_expectancy_index if user.gender == "F" else None
+    expectancy_week_index_m = base_expectancy_index if user.gender == "M" else None
+    expectancy_week_index_f = base_expectancy_index if user.gender == "F" else None
 
     return CalendarStats(
-        anchor_week_start=anchor_week_start,
         birth_week_start=birth_week_start,
-        current_week_start=current_week_start,
-        pre_birth_weeks=pre_birth_weeks,
-        weeks_lived=weeks_lived,
         expectancy_weeks=expectancy_weeks,
         expectancy_week_index_m=expectancy_week_index_m,
         expectancy_week_index_f=expectancy_week_index_f,
@@ -209,24 +159,18 @@ def draw_pdf(user: UserInput, stats: CalendarStats, output_path: Path) -> None:
         return grid_top - (row_idx + 1) * cell_size - decade_jumps * decade_gap
 
     today = date.today()
-    stats.current_week_start
     expectancy_m = stats.expectancy_week_index_m
     expectancy_f = stats.expectancy_week_index_f
 
-    weeks_since_birth = max((today - user.birth_date).days // 7, 0)
-
-    # Precompute current and lived week markers by mode
-    if user.start_mode == "START_AT_BIRTH":
-        age_years = today.year - user.birth_date.year
-        if today < add_years_safe(user.birth_date, age_years):
-            age_years -= 1
-        life_year_start = add_years_safe(user.birth_date, age_years)
-        weeks_since_life_year_start = max((today - life_year_start).days // 7, 0)
-        current_row_birth = age_years
-        current_col_birth = weeks_since_life_year_start
-        lived_index_birth = age_years * WEEKS_PER_DISPLAY_YEAR + weeks_since_life_year_start
-    else:
-        current_index_jan = stats.pre_birth_weeks + weeks_since_birth
+    # Precompute current and lived week markers
+    age_years = today.year - user.birth_date.year
+    if today < add_years_safe(user.birth_date, age_years):
+        age_years -= 1
+    life_year_start = add_years_safe(user.birth_date, age_years)
+    weeks_since_life_year_start = max((today - life_year_start).days // 7, 0)
+    current_row_birth = age_years
+    current_col_birth = weeks_since_life_year_start
+    lived_index_birth = age_years * WEEKS_PER_DISPLAY_YEAR + weeks_since_life_year_start
 
     for week_index in range(TOTAL_WEEKS):
         row = week_index // WEEKS_PER_DISPLAY_YEAR
@@ -237,35 +181,10 @@ def draw_pdf(user: UserInput, stats: CalendarStats, output_path: Path) -> None:
         x = grid_left + col * cell_size
         y = row_y(row)
 
-        # Calculate week start date based on mode
-        if user.start_mode == "START_AT_JAN":
-            # Each row represents a calendar year, each column represents an ISO week
-            # Start from the year of the birth week (not birth date year, as birth might be in last week of previous year)
-            birth_week_start = stats.birth_week_start
-            birth_week_year = birth_week_start.year
-            year = birth_week_year + row
-            iso_week_number = col + 1  # ISO weeks are 1-indexed
-            week_start_date = iso_week1_start(year) + timedelta(weeks=iso_week_number - 1)
-
-            # Hide weeks before birth
-            if week_start_date + timedelta(days=6) < user.birth_date:
-                c.setFillColor(colors.white)
-                c.setStrokeColor(colors.white)
-                c.rect(x, y, cell_size, cell_size, stroke=1, fill=1)
-                continue
-        else:
-            # Each row is a life year; week 0 starts on the actual birth date (not ISO-aligned)
-            life_year_start = add_years_safe(user.birth_date, row)
-            week_start_date = life_year_start + timedelta(weeks=col)
-
-        # Determine current/lived status per mode
-        if user.start_mode == "START_AT_JAN":
-            is_current_week = week_index == current_index_jan
-            is_lived = week_index < current_index_jan
-        else:
-            # START_AT_BIRTH: current week sticks to birth-based week index until the first 7 days complete
-            is_current_week = row == current_row_birth and col == current_col_birth
-            is_lived = week_index < lived_index_birth
+        # Determine current/lived status
+        # Current week sticks to birth-based week index until the first 7 days complete
+        is_current_week = row == current_row_birth and col == current_col_birth
+        is_lived = week_index < lived_index_birth
 
         c.setStrokeColor(colors.black)
         c.setLineWidth(1)
@@ -363,10 +282,7 @@ def draw_pdf(user: UserInput, stats: CalendarStats, output_path: Path) -> None:
     summary_col_x = center_x
 
     # Use grid-aligned lived week count so summary matches shading
-    if user.start_mode == "START_AT_BIRTH":
-        display_weeks_lived = max(lived_index_birth, 0)
-    else:
-        display_weeks_lived = max(current_index_jan, 0)
+    display_weeks_lived = max(lived_index_birth, 0)
 
     weeks_remaining = max(stats.expectancy_weeks - display_weeks_lived, 0)
     percent_lived = (
@@ -382,9 +298,7 @@ def draw_pdf(user: UserInput, stats: CalendarStats, output_path: Path) -> None:
 
     # Draw footer at very bottom of page
     creation_date = date.today().strftime("%Y-%m-%d")
-    footer_line = (
-        f"{user.first_name} | {user.birth_date.strftime('%Y-%m-%d')} | {user.start_mode} | {creation_date}"
-    )
+    footer_line = f"{user.first_name} | {user.birth_date.strftime('%Y-%m-%d')} | {creation_date}"
     c.setFont("Helvetica", 7)
     c.drawCentredString(center_x, bottom_margin + 10, footer_line)
 
