@@ -288,6 +288,8 @@ def draw_pdf(user: UserInput, stats: CalendarStats, output_path: Path) -> None:
     percent_lived = (
         0.0 if stats.expectancy_weeks == 0 else min(display_weeks_lived / stats.expectancy_weeks * 100, 100.0)
     )
+    days_lived_total = (today - user.birth_date).days
+    age_years_exact = days_lived_total / 365.2425
 
     c.setFont("Helvetica-Bold", 9)
     c.drawCentredString(summary_col_x, info_y, "Summary")
@@ -295,6 +297,7 @@ def draw_pdf(user: UserInput, stats: CalendarStats, output_path: Path) -> None:
     c.drawCentredString(summary_col_x, info_y - 12, f"Weeks lived: {display_weeks_lived}")
     c.drawCentredString(summary_col_x, info_y - 22, f"Weeks remaining: {weeks_remaining}")
     c.drawCentredString(summary_col_x, info_y - 32, f"Percent of life lived: {percent_lived:.1f}%")
+    c.drawCentredString(summary_col_x, info_y - 42, f"Age: {age_years_exact:.2f} years")
 
     # Draw footer at very bottom of page
     creation_date = date.today().strftime("%Y-%m-%d")
