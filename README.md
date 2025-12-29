@@ -6,7 +6,7 @@ Generate a one-page PDF life calendar (52 weeks × 90 years) where each row repr
 
 ```bash
 poetry install
-poetry run life-calendar
+poetry run number-our-days
 ```
 
 Follow the prompts for name, birth date (MM/DD/YYYY), and gender (M/F). The PDF is saved as `number_our_days_<firstname>.pdf` in the current directory.
