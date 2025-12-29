@@ -1,0 +1,26 @@
+{
+    "cSpell.words": [
+        "FIRSTNAME",
+        "pyproject"
+    ],
+    "workbench.colorCustomizations": {
+        "activityBar.activeBackground": "#b7f036",
+        "activityBar.background": "#b7f036",
+        "activityBar.foreground": "#15202b",
+        "activityBar.inactiveForeground": "#15202b99",
+        "activityBarBadge.background": "#0f95d0",
+        "activityBarBadge.foreground": "#e7e7e7",
+        "commandCenter.border": "#15202b99",
+        "sash.hoverBorder": "#b7f036",
+        "statusBar.background": "#a2e211",
+        "statusBar.foreground": "#15202b",
+        "statusBarItem.hoverBackground": "#80b30d",
+        "statusBarItem.remoteBackground": "#a2e211",
+        "statusBarItem.remoteForeground": "#15202b",
+        "titleBar.activeBackground": "#a2e211",
+        "titleBar.activeForeground": "#15202b",
+        "titleBar.inactiveBackground": "#a2e21199",
+        "titleBar.inactiveForeground": "#15202b99"
+    },
+    "peacock.color": "#a2e211"
+}

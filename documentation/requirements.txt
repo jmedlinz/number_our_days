@@ -1,0 +1,55 @@
+Initial requirements for the project.  Note that these requirements may have evolved as the project was built.
+--------------------------------------------------------------------------------------------------------------------------------------
+
+Create a PDF that displays a "life calendar" - a grid representing a typical lifespan of 90 years, with each square representing one week.
+The calendar should have 52 columns (one for each week of the year) and 90 rows (one for each year of life).
+Each square should be empty, allowing the user to fill in the weeks they have lived.
+Group rows into blocks of 10 rows to represent decades, with a slight increase in spacing between each block for better visual separation.
+An example layout is provided in the file documentation\example_life_calendar.jpg
+
+Filled squares should be solid gray, while empty squares should be white with a black border.  the squares should be flat - no shadows or other 3D effects.
+Only fill in the squares for the weeks that have already been completely lived based on the user's birth date and the current date.
+Use the ISO standard for week numbering, where the first week of the year is the week with the first Thursday of the year.
+
+The PDF should also include a title at the top that says "Life Calendar" and a subtitle that reads "Each square represents one week.  Each line represents one year.  Each block represents a decade."
+The PDF should be a standard letter size (8.5 x 11 inches) in portrait orientation.  The entire calendar should fit on one page, within the page margins, with appropriate spacing between squares and rows for clarity.
+Add age markers/decade labels on the left side of the calendar (10, 20, 30, etc.) to help users quickly identify the decades.
+Add an optional footer line: name + birthdate + generation mode (START_AT_BIRTH / START_IN_JAN) + file creation date.
+
+At the bottom of the calendar, include the following information:
+Weeks lived: <number_of_weeks_lived>
+Weeks remaining (the user's life expectancy): <number_of_weeks_remaining>
+Percent of live lived (based on life expectancy): <percent_of_life_lived>%
+
+Some special squares to note:
+- The square representing the week of the average life expectancy for men in the USA should be outlined in blue to highlight it, if the user is a male.
+- The square representing the week of the average life expectancy for women in the USA should be outlined in red to highlight it, if the user is a female.
+- The current week (the week that includes today's date) should have a thicker black border to indicate the present time.
+
+At the bottom of the calendar, include a legend that explains the color coding:
+- Gray squares: Weeks already lived
+- White squares: Weeks yet to be lived
+- Blue outline: Average life expectancy for men in the USA
+- Red outline: Average life expectancy for women in the USA
+- Thicker black border: Current week
+
+When generating life expectancy information, use data from the CDC.
+
+Use python to create this PDF.
+I use poetry.  I created a poetry.toml file and a pyproject.toml file.  Feel free to update them.
+
+When the script(s) are run, it should
+1. Ask the user their first name.
+    Verify the name is not empty, is alphabetic, and is at least 2 characters long, and contains no spaces
+2. Ask the user their birth date.
+    Verify the date is in the format MM/DD/YYYY and is a valid date in the past.
+    You can assume that the user is less than 90 years old.
+3. Ask the user if they're male or female.
+    Verify the input begins with either "M" or "F".
+4. Ask the user if they want to start the calendar from their birth week (START_AT_BIRTH) or from the beginning of the year they were born (START_IN_JAN).
+5. If START_AT_BIRTH is selected, the calendar should start from the week of the user's birth date.  The first square should correspond to the week they were born.
+    For the Birth Week Calculation: Find which week of the year they were born in (using ISO week date system).  The first square in the calendar should correspond to that week in that year.
+6. If START_IN_JAN is selected, the calendar should start from January of the year the user was born.  The first square should correspond to the first week of that year.  HOWEVER, the weeks prior to the user's birth week should be left blank - white squares with white borders, making them invisible on the PDF.
+7. If there are problems with the validation, exit the program with an appropriate error message.
+8. Generate the life calendar PDF accordingly, filling in the weeks already lived based on the current date.  Name the file "life_calendar_<FIRSTNAME>.pdf", where <FIRSTNAME> is the user's first name in lowercase.
+--------------------------------------------------------------------------------------------------------------------------------------
