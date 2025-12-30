@@ -24,4 +24,4 @@ Follow the prompts for name, birth date (MM/DD/YYYY), and gender (M/F). The PDF 
 - Tests: `pytest`
 
 ## Contact
-James Medlin <jmedlin@westervelt.com>
+James Medlin <james@themedlins.com>

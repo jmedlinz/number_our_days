@@ -2,7 +2,7 @@
  name = "number_our_days"
  version = "0.1.0"
  description = "Generate a one-page PDF life calendar with ISO week logic."
- authors = ["James Medlin <jmedlin@westervelt.com>"]
+ authors = ["James Medlin <james@themedlins.com>"]
  readme = "README.md"
  package-mode = true
 
