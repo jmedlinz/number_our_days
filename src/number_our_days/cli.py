@@ -57,7 +57,7 @@ def collect_user_input(debug: bool = False) -> UserInput:
 
     if debug:
         first = "debug"
-        birth_dt = date(2000, 1, 1)
+        birth_dt = add_years_safe(date.today(), -20)
         gender = "M"
         print(f"DEBUG MODE: Using first_name={first}, birth_date={birth_dt}, gender={gender}")
         print(f"Today: {date.today()}")
@@ -128,12 +128,14 @@ def draw_pdf(user: UserInput, stats: CalendarStats, output_path: Path) -> None:
 
     title_y = height - top_margin
     c.setFont("Helvetica-Bold", 18)
-    c.drawCentredString(center_x, title_y, "Life Calendar")
-    c.setFont("Helvetica", 10)
+    c.drawCentredString(center_x, title_y, "Number Our Days - Life Calendar")
+    c.setFont("Helvetica", 8)
+    verse = '"So teach us to number our days, that we may get a heart of wisdom." — Psalm 90:12 (ESV)'
+    c.drawCentredString(center_x, title_y - 18, verse)
     subtitle = "Each square represents one week. Each line represents one year. Each block represents a decade."
-    c.drawCentredString(center_x, title_y - 18, subtitle)
+    c.drawCentredString(center_x, title_y - 32, subtitle)
 
-    grid_top_max = title_y - 34
+    grid_top_max = title_y - 46
     grid_bottom_min = bottom_margin + legend_space
 
     available_height = grid_top_max - grid_bottom_min

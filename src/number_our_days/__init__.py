@@ -1,1 +1,1 @@
-"""Life Calendar PDF generator package."""
+"""Number Our Days - A Weekly Life Calendar PDF Generator package."""
