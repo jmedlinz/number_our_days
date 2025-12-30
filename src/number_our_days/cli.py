@@ -198,18 +198,34 @@ def draw_pdf(user: UserInput, stats: CalendarStats, output_path: Path) -> None:
         c.rect(x, y, cell_size, cell_size, stroke=1, fill=1)
 
         if is_current_week:
-            c.setLineWidth(2.2)
-            c.setFillColor(colors.transparent)
-            c.rect(x, y, cell_size, cell_size, stroke=1, fill=0)
+            c.setFillColor(colors.blue)
+            c.setStrokeColor(colors.black)
             c.setLineWidth(1)
+            c.rect(x, y, cell_size, cell_size, stroke=1, fill=1)
+            # Draw white diamond in center
+            diamond_size = cell_size * 0.3
+            center_x_cell = x + cell_size / 2
+            center_y_cell = y + cell_size / 2
+            p = c.beginPath()
+            p.moveTo(center_x_cell, center_y_cell + diamond_size)
+            p.lineTo(center_x_cell + diamond_size, center_y_cell)
+            p.lineTo(center_x_cell, center_y_cell - diamond_size)
+            p.lineTo(center_x_cell - diamond_size, center_y_cell)
+            p.close()
+            c.setFillColor(colors.white)
+            c.setStrokeColor(colors.white)
+            c.drawPath(p, stroke=1, fill=1)
 
         if (expectancy_m is not None and week_index == expectancy_m) or (
             expectancy_f is not None and week_index == expectancy_f
         ):
+            # Draw red X across the box
+            margin = cell_size * 0.15
             c.setStrokeColor(colors.red)
-            c.setLineWidth(1.2)
-            c.setFillColor(colors.transparent)
-            c.rect(x + 0.5, y + 0.5, cell_size - 1, cell_size - 1, stroke=1, fill=0)
+            c.setLineWidth(1.5)
+            # Draw diagonal lines forming an X
+            c.line(x + margin, y + margin, x + cell_size - margin, y + cell_size - margin)
+            c.line(x + margin, y + cell_size - margin, x + cell_size - margin, y + margin)
             c.setStrokeColor(colors.black)
             c.setLineWidth(1)
 
@@ -258,22 +274,40 @@ def draw_pdf(user: UserInput, stats: CalendarStats, output_path: Path) -> None:
     c.setFillColor(colors.black)
     c.drawString(text_x, y2 - 4, "Weeks to be lived")
 
-    # White box with thick border - Current week
+    # Blue box with white diamond - Current week
     y3 = y2 - box_spacing
-    c.setFillColor(colors.white)
+    c.setFillColor(colors.blue)
     c.setStrokeColor(colors.black)
-    c.setLineWidth(1.5)
-    c.rect(legend_x, y3 - 6, box_size, box_size, stroke=1, fill=1)
-    c.setFillColor(colors.black)
     c.setLineWidth(0.5)
+    c.rect(legend_x, y3 - 6, box_size, box_size, stroke=1, fill=1)
+    # Draw small white diamond
+    diamond_size = box_size * 0.4
+    center_x_diamond = legend_x + box_size / 2
+    center_y_diamond = y3 - 2
+    p = c.beginPath()
+    p.moveTo(center_x_diamond, center_y_diamond + diamond_size)
+    p.lineTo(center_x_diamond + diamond_size, center_y_diamond)
+    p.lineTo(center_x_diamond, center_y_diamond - diamond_size)
+    p.lineTo(center_x_diamond - diamond_size, center_y_diamond)
+    p.close()
+    c.setFillColor(colors.white)
+    c.setStrokeColor(colors.white)
+    c.drawPath(p, stroke=0, fill=1)
+    c.setFillColor(colors.black)
     c.drawString(text_x, y3 - 4, "Current week")
 
-    # White box with red border - Life expectancy
+    # White box with red X - Life expectancy
     y4 = y3 - box_spacing
     c.setFillColor(colors.white)
+    c.setStrokeColor(colors.black)
+    c.setLineWidth(0.5)
+    c.rect(legend_x, y4 - 6, box_size, box_size, stroke=1, fill=1)
+    # Draw red X
+    margin = box_size * 0.1
     c.setStrokeColor(colors.red)
     c.setLineWidth(1)
-    c.rect(legend_x, y4 - 6, box_size, box_size, stroke=1, fill=1)
+    c.line(legend_x + margin, y4 - 6 + margin, legend_x + box_size - margin, y4 - 6 + box_size - margin)
+    c.line(legend_x + margin, y4 - 6 + box_size - margin, legend_x + box_size - margin, y4 - 6 + margin)
     c.setFillColor(colors.black)
     c.setStrokeColor(colors.black)
     c.setLineWidth(0.5)
