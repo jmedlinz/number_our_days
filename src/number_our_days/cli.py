@@ -6,6 +6,7 @@ from datetime import date, datetime, timedelta
 from pathlib import Path
 
 from reportlab.lib import colors
+from reportlab.lib.colors import HexColor
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 
@@ -124,15 +125,15 @@ def draw_pdf(user: UserInput, stats: CalendarStats, output_path: Path) -> None:
     right_margin = 36
     top_margin = 54
     bottom_margin = 54
-    legend_space = 100
+    legend_space = 50
     center_x = width / 2
 
     title_y = height - top_margin
-    c.setFont("Helvetica-Bold", 18)
-    c.drawCentredString(center_x, title_y, "Number Our Days - Life Calendar")
+    c.setFont("Helvetica-Bold", 14)
+    c.drawCentredString(center_x, title_y, "Number Our Days")
     c.setFont("Helvetica", 8)
     current_date = today.strftime("%B %d, %Y")
-    date_subtitle = f"As Of {current_date}"
+    date_subtitle = f"Life Calendar for {user.first_name}, created on {current_date}"
     c.drawCentredString(center_x, title_y - 18, date_subtitle)
 
     verse = '"So teach us to number our days, that we may get a heart of wisdom." — Psalm 90:12 (ESV)'
@@ -197,7 +198,7 @@ def draw_pdf(user: UserInput, stats: CalendarStats, output_path: Path) -> None:
         c.setLineWidth(1)
 
         if is_lived:
-            c.setFillColor(colors.grey)
+            c.setFillColor(HexColor("#AAAAAA"))
         else:
             c.setFillColor(colors.white)
         c.rect(x, y, cell_size, cell_size, stroke=1, fill=1)
@@ -263,7 +264,7 @@ def draw_pdf(user: UserInput, stats: CalendarStats, output_path: Path) -> None:
 
     # Gray box - Weeks already lived
     y1 = legend_y_start
-    c.setFillColor(colors.grey)
+    c.setFillColor(HexColor("#AAAAAA"))
     c.setStrokeColor(colors.black)
     c.setLineWidth(0.5)
     c.rect(legend_x, y1 - 6, box_size, box_size, stroke=1, fill=1)
@@ -318,8 +319,16 @@ def draw_pdf(user: UserInput, stats: CalendarStats, output_path: Path) -> None:
     c.setLineWidth(0.5)
     c.drawString(text_x, y4 - 4, f"Life expectancy: {expectancy_years}")
 
+    # Draw box around legend
+    legend_padding = 6
+    legend_width = text_x + 85 - (legend_x - legend_padding)
+    legend_height = legend_y_start - (y4 - 6) + legend_padding * 2
+    c.setStrokeColor(colors.black)
+    c.setLineWidth(1)
+    c.rect(legend_x - legend_padding, y4 - 6 - legend_padding, legend_width, legend_height, stroke=1, fill=0)
+
     # Draw Summary below grid centered
-    info_y = grid_bottom_min - 20
+    info_y = grid_bottom_min - 28
     summary_col_x = center_x
 
     # Use grid-aligned lived week count so summary matches shading
@@ -340,11 +349,14 @@ def draw_pdf(user: UserInput, stats: CalendarStats, output_path: Path) -> None:
     c.drawCentredString(summary_col_x, info_y - 32, f"Percent of life lived: {percent_lived:.1f}%")
     c.drawCentredString(summary_col_x, info_y - 42, f"Age: {age_years_exact:.2f} years")
 
-    # Draw footer at very bottom of page
-    creation_date = today.strftime("%Y-%m-%d")
-    footer_line = f"{user.first_name} | {user.birth_date.strftime('%Y-%m-%d')} | {creation_date}"
-    c.setFont("Helvetica", 7)
-    c.drawCentredString(center_x, bottom_margin + 10, footer_line)
+    # Draw box around summary
+    summary_padding = 4
+    summary_width = legend_width  # Same width as legend
+    summary_height = info_y + summary_padding + 8 - (info_y - 42 - summary_padding)
+    summary_left = summary_col_x - summary_width / 2
+    c.setStrokeColor(colors.black)
+    c.setLineWidth(1)
+    c.rect(summary_left, info_y - 42 - summary_padding, summary_width, summary_height, stroke=1, fill=0)
 
     c.showPage()
     c.save()
