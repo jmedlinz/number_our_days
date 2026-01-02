@@ -118,6 +118,7 @@ def compute_stats(user: UserInput) -> CalendarStats:
 def draw_pdf(user: UserInput, stats: CalendarStats, output_path: Path) -> None:
     c = canvas.Canvas(str(output_path), pagesize=letter)
     width, height = letter
+    today = date.today()
 
     left_margin = 36
     right_margin = 36
@@ -130,12 +131,17 @@ def draw_pdf(user: UserInput, stats: CalendarStats, output_path: Path) -> None:
     c.setFont("Helvetica-Bold", 18)
     c.drawCentredString(center_x, title_y, "Number Our Days - Life Calendar")
     c.setFont("Helvetica", 8)
-    verse = '"So teach us to number our days, that we may get a heart of wisdom." — Psalm 90:12 (ESV)'
-    c.drawCentredString(center_x, title_y - 18, verse)
-    subtitle = "Each square represents one week. Each line represents one year. Each block represents a decade."
-    c.drawCentredString(center_x, title_y - 32, subtitle)
+    current_date = today.strftime("%B %d, %Y")
+    date_subtitle = f"As Of {current_date}"
+    c.drawCentredString(center_x, title_y - 18, date_subtitle)
 
-    grid_top_max = title_y - 46
+    verse = '"So teach us to number our days, that we may get a heart of wisdom." — Psalm 90:12 (ESV)'
+    c.drawCentredString(center_x, title_y - 32, verse)
+
+    subtitle = "Each square represents one week. Each line represents one year. Each block represents a decade."
+    c.drawCentredString(center_x, title_y - 46, subtitle)
+
+    grid_top_max = title_y - 60
     grid_bottom_min = bottom_margin + legend_space
 
     available_height = grid_top_max - grid_bottom_min
@@ -160,7 +166,6 @@ def draw_pdf(user: UserInput, stats: CalendarStats, output_path: Path) -> None:
         decade_jumps = row_idx // 10
         return grid_top - (row_idx + 1) * cell_size - decade_jumps * decade_gap
 
-    today = date.today()
     expectancy_m = stats.expectancy_week_index_m
     expectancy_f = stats.expectancy_week_index_f
 
@@ -336,7 +341,7 @@ def draw_pdf(user: UserInput, stats: CalendarStats, output_path: Path) -> None:
     c.drawCentredString(summary_col_x, info_y - 42, f"Age: {age_years_exact:.2f} years")
 
     # Draw footer at very bottom of page
-    creation_date = date.today().strftime("%Y-%m-%d")
+    creation_date = today.strftime("%Y-%m-%d")
     footer_line = f"{user.first_name} | {user.birth_date.strftime('%Y-%m-%d')} | {creation_date}"
     c.setFont("Helvetica", 7)
     c.drawCentredString(center_x, bottom_margin + 10, footer_line)
